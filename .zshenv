@@ -47,6 +47,10 @@ passwords(){
 	pass-station search "$1" --no-color --output JSON | jq -R 'fromjson?' | jq -c '.[] | select( . != null )' | jq -r '(.username + ":" + .password)'
 }
 #############################################################
+alives(){
+        nmap -sn $1 | awk '/Nmap scan/{gsub(/[()]/,"",$NF); print $NF > "nmap_scanned_ips"}'
+}
+#############################################################
 tcpfull(){
 	mkdir -p $REPORTPATH/$1
 	rustscan -a $1 --accessible --batch-size 8000 -- -sV -sS -sC -Pn -T5 > $REPORTPATH/$1/TcpFullScan.txt
@@ -59,22 +63,6 @@ webfull(){
 	katana -nc -silent -d 3 -js-crawl -known-files all -automatic-form-fill -c 50 -parallelism 50 -u $Host > $REPORTPATH/$Host/katana.txt &
 	wait
 }
-#############################################################
-# hash-id(){
-# 	hash-identifier $1 | tail -n +15
-# 	sleep 0.8
-# 	HASHIDPID=$(pgrep -f hash-identifier)
-# 	kill -9 $HASHIDPID >/dev/null 2>&1 &
-# 	pkill -9 -f hash-identifier >/dev/null 2>&1 &
-# }
-#############################################################
-# crackhash(){
-# 	Algo={"algo":["MD4","MD5","SHA1","SHA224","SHA256","SHA384","SHA512","RMD160","GOST","WHIRLPOOL","LM","NTLM","MYSQL","CISCO7","JUNIPER","LDAP_MD5","LDAP_SHA1"]}
-# 	AlgoCheck=$(echo $Algo | jq -r '.algo[]' | grep $PROTOCOL)
-# 	if [[ -n $AlgoCheck ]];then
-# 		python2 findmyhash.py $1 -h $2 -g
-# 	fi
-# }
 ##############################################################
 smbchecks(){
 	mkdir -p $REPORTPATH/$1
@@ -105,6 +93,3 @@ hashcat-search(){
 	hashcat -h | grep -i -A 478 "Hash modes" | grep -o $1 
 }
 ##############################################################
-# ldap-users(){
-	
-# }
